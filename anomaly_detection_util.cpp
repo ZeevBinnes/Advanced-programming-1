@@ -5,26 +5,44 @@
  */
 
 #include <math.h>
+#include <stdexcept>
 #include "anomaly_detection_util.h"
 
 float avg(float* x, int size){
-	return 0;
+    if (size <= 0) throw std::runtime_error("Size is less than 1\n");
+    float sum = 0;
+    for (int i = 0; i < size ; i++){
+        sum += x[i];
+    }
+	return sum/(float)size;
 }
 
 // returns the variance of X and Y
 float var(float* x, int size){
-	return 0;
+    float mu = avg(x, size);
+    float sum2 = 0;
+    for (int i = 0; i < size ; i++){
+        sum2 += pow(x[i], 2);
+    }
+	return (sum2 / (float)size) - pow(mu, 2);
 }
 
 // returns the covariance of X and Y
 float cov(float* x, float* y, int size){
-	return 0;
+    if (size <= 0) throw std::runtime_error("Size is less than 1\n");
+    float sum = 0;
+    for (int i = 0; i < size ; i++){
+        sum += (x[i] - avg(x,size))*(y[i] - avg(y,size));
+    }
+    return sum / (float)size;
 }
 
 
 // returns the Pearson correlation coefficient of X and Y
 float pearson(float* x, float* y, int size){
-	return 0;
+    float denominator = (sqrt(var(x,size))*sqrt(var(y,size)));
+    if (denominator == 0) throw runtime_error("Math error: divide by zero\n");
+	return cov(x,y,size)/denominator;
 }
 
 // performs a linear regression and returns the line equation
