@@ -1,7 +1,7 @@
 /*
  * animaly_detection_util.cpp
  *
- * Author: write your ID and name here
+ * Author: 313361560 Shahar Rapp
  */
 
 #include <math.h>
