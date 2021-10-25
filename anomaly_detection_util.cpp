@@ -41,7 +41,7 @@ float cov(float* x, float* y, int size){
 // returns the Pearson correlation coefficient of X and Y
 float pearson(float* x, float* y, int size){
     float denominator = (sqrt(var(x,size))*sqrt(var(y,size)));
-    if (denominator == 0) throw runtime_error("Math error: divide by zero\n");
+    if (denominator == 0) throw std::runtime_error("Math error: divide by zero\n");
 	return cov(x,y,size)/denominator;
 }
 
