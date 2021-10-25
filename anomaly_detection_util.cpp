@@ -1,7 +1,7 @@
 /*
  * animaly_detection_util.cpp
  *
- * Author: 313361560 Shahar Rapp
+ * Author: 313361560 Shahar Rapp, 205866163 Ze'ev Binnes.
  */
 
 #include <math.h>
@@ -47,18 +47,29 @@ float pearson(float* x, float* y, int size){
 
 // performs a linear regression and returns the line equation
 Line linear_reg(Point** points, int size){
+    float *x = new float[size];
+    float *y = new float[size];
+    for (int i = 0; i < size; i++) {
+        x[i] = points[i]->x;
+        y[i] = points[i]->y;
+    }
+    float a = (cov(x, y, size) / var(x, size));
+    float b = avg(y, size) - (a * avg(x, size));
 
-	return Line(0,0);
+    delete[] x;
+    delete[] y;
+    return Line(a,b);
 }
 
 // returns the deviation between point p and the line equation of the points
 float dev(Point p,Point** points, int size){
-	return 0;
+    Line line = linear_reg(points, size);
+    return dev(p, line);
 }
 
 // returns the deviation between point p and the line
 float dev(Point p,Line l){
-	return 0;
+    return std::abs(l.f(p.x) - p.y);
 }
 
 
