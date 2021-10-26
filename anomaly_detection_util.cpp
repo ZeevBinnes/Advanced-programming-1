@@ -5,11 +5,10 @@
  */
 
 #include <math.h>
-#include <stdexcept>
 #include "anomaly_detection_util.h"
 
 float avg(float* x, int size){
-    if (size <= 0) throw std::runtime_error("Size is less than 1\n");
+    if (size <= 0) return NAN;
     float sum = 0;
     for (int i = 0; i < size ; i++){
         sum += x[i];
@@ -29,7 +28,7 @@ float var(float* x, int size){
 
 // returns the covariance of X and Y
 float cov(float* x, float* y, int size){
-    if (size <= 0) throw std::runtime_error("Size is less than 1\n");
+    if (size <= 0) return NAN;
     float sum = 0;
     for (int i = 0; i < size ; i++){
         sum += (x[i] - avg(x,size))*(y[i] - avg(y,size));
@@ -41,7 +40,7 @@ float cov(float* x, float* y, int size){
 // returns the Pearson correlation coefficient of X and Y
 float pearson(float* x, float* y, int size){
     float denominator = (sqrt(var(x,size))*sqrt(var(y,size)));
-    if (denominator == 0) throw std::runtime_error("Math error: divide by zero\n");
+    if (denominator == 0) return NAN;
 	return cov(x,y,size)/denominator;
 }
 
@@ -69,7 +68,7 @@ float dev(Point p,Point** points, int size){
 
 // returns the deviation between point p and the line
 float dev(Point p,Line l){
-    return std::abs(l.f(p.x) - p.y);
+    return fabs(l.f(p.x) - p.y);
 }
 
 
