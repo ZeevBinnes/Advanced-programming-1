@@ -35,7 +35,7 @@ void SimpleAnomalyDetector::learnNormal(const TimeSeries& ts){
             cf1.feature1 = ts.getHeadLine(i);
             cf1.feature2 = ts.getHeadLine(c);
             cf1.corrlation = maxPearson;
-            cf1.lin_reg = linear_reg(col1, col2, ts.getLength());   // !!!!! I added a new function to util, to prevent double work.
+            cf1.lin_reg = linear_reg(col1, col2, ts.getLength());
             cf1.max_offset = 0;
             // Find the max offset from the line.
             for (int k = 0; k < ts.getLength(); k++) {
@@ -51,5 +51,25 @@ void SimpleAnomalyDetector::learnNormal(const TimeSeries& ts){
 }
 
 vector<AnomalyReport> SimpleAnomalyDetector::detect(const TimeSeries& ts){
+    vector<AnomalyReport> report;
+    // iterate through the rows.
+    for (int i = 0; i < ts.getLength(); i++) {
+        vector<float> row = ts.getRow(i);
+        // for each row, check that all the features are OK.
+        for (correlatedFeatures cf1 : this->cf) {
+            // skip unsignificant corrlations.
+            if (cf1.corrlation < cf1.threshold)
+                continue;
+            // get the right columns by name: I'm not sure the order will always be the same.
+            int feature1Index = ts.getFeaturesIndex(cf1.feature1);
+            int feature2Index = ts.getFeaturesIndex(cf1.feature2);
+            Point point = Point(row[feature1Index], row[feature2Index]);
+            float deviation = dev(point, cf1.lin_reg);
+            // if the deviation is to big, report a problem.
+            if (deviation > cf1.max_offset)
+                report.push_back(AnomalyReport(cf1.feature1+"-"+cf1.feature2, ts.getTime(i)));
+        }
+    }
+    return report;
 }
 
