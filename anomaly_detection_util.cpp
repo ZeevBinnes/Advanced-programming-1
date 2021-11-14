@@ -52,12 +52,18 @@ Line linear_reg(Point** points, int size){
         x[i] = points[i]->x;
         y[i] = points[i]->y;
     }
-    float a = (cov(x, y, size) / var(x, size));
-    float b = avg(y, size) - (a * avg(x, size));
+    Line line = linear_reg(x, y, size);
 
     delete[] x;
     delete[] y;
-    return Line(a,b);
+    return line;
+}
+
+// performs a linear regression from float*, and returns the line equation
+Line linear_reg(float* x, float* y, int size) {
+    float a = (cov(x, y, size) / var(x, size));
+    float b = avg(y, size) - (a * avg(x, size));
+    return Line(a, b);
 }
 
 // returns the deviation between point p and the line equation of the points
