@@ -15,6 +15,7 @@ struct correlatedFeatures{
 	float corrlation;
 	Line lin_reg;
 	float threshold;
+	float max_offset;	// I added this one, I think it's needed
 };
 
 
