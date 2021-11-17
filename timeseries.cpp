@@ -40,6 +40,9 @@ TimeSeries::TimeSeries (const char *CSVfileName){
     }
 }
 
+TimeSeries::~TimeSeries(){
+}
+
 
 vector<float> TimeSeries::getColumn(int index) const{
     vector<float> column;
@@ -73,8 +76,4 @@ int TimeSeries::getFeaturesIndex(const string name) const{
     }
     cout << "No such feature" << endl;
     return -1;
-}
-// get the time of the row in index "index"
-long TimeSeries::getTime(int index) const{
-    return times[index][0];
 }

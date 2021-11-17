@@ -26,7 +26,6 @@ public:
 	int getSize() const;	// get the number of columns
 	int getLength() const;	// get the number of rows
 	int getFeaturesIndex(string name) const;	// get the index of a feature given by name (return -1 if there isnt)
-	long getTime(int index) const;	// get the time of the row in index "index"
 };
 
 #endif /* TIMESERIES_H_ */

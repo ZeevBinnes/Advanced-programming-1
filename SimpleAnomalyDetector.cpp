@@ -21,7 +21,7 @@ which is a member of the "SimpleAnomalyDetector" Class.
 void SimpleAnomalyDetector::learnNormal(const TimeSeries& ts){
     // initialize parameters:
     float threshold = 0.25;      // correlation should be bigger than threshold
-    float enlarge_allowed_dev = 1.2;    // allow small anomaly, bigger than the max deviation by this.
+    float enlarge_allowed_dev = 1.1;    // allow small anomaly, bigger than the max deviation by this.
     // Iterate through the columns.
     for (int i = 0; i < ts.getSize(); i++) {
         float maxPearson = threshold;      // the pearson with the most matching column.
@@ -75,7 +75,7 @@ vector<AnomalyReport> SimpleAnomalyDetector::detect(const TimeSeries& ts){
             float deviation = dev(point, cf1.lin_reg);
             // if the deviation is to big, report a problem.
             if (deviation > cf1.max_offset)
-                report.push_back(AnomalyReport(cf1.feature1+"-"+cf1.feature2, ts.getTime(i)));
+                report.push_back(AnomalyReport(cf1.feature1+"-"+cf1.feature2, i+1));
         }
     }
     return report;
