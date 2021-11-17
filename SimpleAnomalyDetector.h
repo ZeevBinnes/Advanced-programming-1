@@ -14,8 +14,8 @@ struct correlatedFeatures{
 	string feature1,feature2;  // names of the correlated features
 	float corrlation;
 	Line lin_reg;
-	float threshold = 0;	// for now I let every corrlation
-	float max_offset;	// I added this one, I think it's needed
+	float threshold;	// will save the threshold given as parameter in learnNormal
+	float max_offset;	// the largest deviation of a point from the line
 };
 
 

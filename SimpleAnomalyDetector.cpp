@@ -15,7 +15,7 @@ which is a member of the "SimpleAnomalyDetector" Class.
 */
 void SimpleAnomalyDetector::learnNormal(const TimeSeries& ts){
     // initialize parameters:
-    float threshold = 0.8;      // correlation should be bigger than threshold
+    float threshold = 0.25;      // correlation should be bigger than threshold
     float enlarge_allowed_dev = 1.2;    // allow small anomaly, bigger than the max deviation by this.
     // Iterate through the columns.
     for (int i = 0; i < ts.getSize(); i++) {
@@ -39,6 +39,7 @@ void SimpleAnomalyDetector::learnNormal(const TimeSeries& ts){
             cf1.feature2 = ts.getHeadLine(c);
             cf1.corrlation = maxPearson;
             cf1.lin_reg = linear_reg(col1, col2, ts.getLength());
+            cf1.threshold = threshold;
             cf1.max_offset = 0;
             // Find the max offset from the line.
             for (int k = 0; k < ts.getLength(); k++) {
