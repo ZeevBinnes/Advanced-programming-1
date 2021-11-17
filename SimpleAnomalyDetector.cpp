@@ -14,9 +14,12 @@ find pair of correlated features, and add them to the list of correlated fatures
 which is a member of the "SimpleAnomalyDetector" Class.
 */
 void SimpleAnomalyDetector::learnNormal(const TimeSeries& ts){
+    // initialize parameters:
+    float threshold = 0.8;      // correlation should be bigger than threshold
+    float enlarge_allowed_dev = 1.2;    // allow small anomaly, bigger than the max deviation by this.
     // Iterate through the columns.
     for (int i = 0; i < ts.getSize(); i++) {
-        int maxPearson = 0;      // the pearson with the most matching column.
+        float maxPearson = threshold;      // the pearson with the most matching column.
         int c = -1;     // will save the matching column.
         float* col1 = ts.getColumn(i);
         // check the next columns, and choose the one that has the best match.
@@ -39,12 +42,11 @@ void SimpleAnomalyDetector::learnNormal(const TimeSeries& ts){
             cf1.max_offset = 0;
             // Find the max offset from the line.
             for (int k = 0; k < ts.getLength(); k++) {
-                float d = dev(Point(col1[k], col2[k]), cf1.lin_reg);    // !!!!!!! check if the function has to be const.
-                if (d > cf1.max_offset) {
+                float d = dev(Point(col1[k], col2[k]), cf1.lin_reg);
+                if (d > cf1.max_offset)
                     cf1.max_offset = d;
-                }
             }
-            cf1.max_offset = 1.1 * cf1.max_offset;  // allow a small deviation.
+            cf1.max_offset = enlarge_allowed_dev * cf1.max_offset;  // allow a small deviation.
             this->cf.push_back(cf1);    // add the pair to the list of correlated features.
         }
     }
