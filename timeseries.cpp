@@ -11,14 +11,11 @@
 
 using namespace std;
 
+
 TimeSeries::TimeSeries (const char *CSVfileName){
-    readCSV(CSVfileName);
-}
-
-
-void TimeSeries::readCSV(const char* CSVfileName){
     fstream csv;
     csv.open(CSVfileName);
+    // check if file is operable
     if(!csv.is_open()) {
         cout << "Failed to open file" << endl;
         return;
@@ -31,6 +28,7 @@ void TimeSeries::readCSV(const char* CSVfileName){
     while(getline(first, feature, ',')){
         this->features.push_back(feature);
     }
+    // get samples
     while(getline(csv, line)){
         string x;
         vector<float> time;
@@ -41,6 +39,7 @@ void TimeSeries::readCSV(const char* CSVfileName){
         this->times.push_back(time);
     }
 }
+
 
 vector<float> TimeSeries::getColumn(int index) const{
     vector<float> column;
@@ -65,7 +64,7 @@ int TimeSeries::getSize() const{
 int TimeSeries::getLength() const{
     return times.size();
 }
-// get the index of a feature given by name
+// get the index of a feature given by name (return -1 if there isnt)
 int TimeSeries::getFeaturesIndex(const string name) const{
     for (int i = 0; i < features.size(); i++){
         if(features[i].compare(name) == 0){

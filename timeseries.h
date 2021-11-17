@@ -11,28 +11,22 @@
 #include <vector>
 #include <map>
 
-
-
 using namespace std;
 
 class TimeSeries{
-    vector<string> features;
-    vector<vector<float>> times;
-public:
+    vector<string> features; // names of columns
+    vector<vector<float>> times; // time samples of every features
 
-	TimeSeries(const char* CSVfileName);
-    vector<float> getColumn(int index) const;
-	vector<float> getRow(int index) const;
+public:
+	TimeSeries(const char* CSVfileName); // TimeSeries constructor accept only CSV file ant build a vectors object
+    virtual ~TimeSeries(); // virtual destructor
+    vector<float> getColumn(int index) const; // return the vector of all samples from one feature
+	vector<float> getRow(int index) const; // // return the vector of all samples from one time
 	string getHeadLine(int index) const;	// get the features name
 	int getSize() const;	// get the number of columns
 	int getLength() const;	// get the number of rows
-	int getFeaturesIndex(string name) const;	// get the index of a feature given by name
+	int getFeaturesIndex(string name) const;	// get the index of a feature given by name (return -1 if there isnt)
 	long getTime(int index) const;	// get the time of the row in index "index"
-    void readCSV(const char* CSVfileName);
-
-
 };
-
-
 
 #endif /* TIMESERIES_H_ */
