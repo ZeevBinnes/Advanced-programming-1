@@ -71,8 +71,5 @@ int TimeSeries::getFeaturesIndex(const string name) const{
 }
 // get the time of the row in index "index"
 long TimeSeries::getTime(int index) const{
-    if(features[0].compare("time") == 0 || features[0].compare("Time") == 0 || features[0].compare("TIME") == 0){
-        return times[index][0];
-    }
-    return -1;
+    return times[index][0];
 }
