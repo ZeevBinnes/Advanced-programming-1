@@ -18,10 +18,10 @@ void SimpleAnomalyDetector::learnNormal(const TimeSeries& ts){
     for (int i = 0; i < ts.getSize(); i++) {
         int maxPearson = 0;      // the pearson with the most matching column.
         int c = -1;     // will save the matching column.
-        float* col1 = ts.getColumn(i);
+        vector<float> col1 = ts.getColumn(i);
         // check the next columns, and choose the one that has the best match.
         for (int j = i + 1; j < ts.getSize(); j++) {
-            float* col2 = ts.getColumn(j);
+            vector<float> col2 = ts.getColumn(j);
             float p = std::fabs(pearson(col1, col2, ts.getLength()));
             if (p > maxPearson) {
                 maxPearson = p;  // save the best pearson.
@@ -30,7 +30,7 @@ void SimpleAnomalyDetector::learnNormal(const TimeSeries& ts){
         }
         // If any match was found, save the best one to the correlated features list.
         if (c != -1) {
-            float* col2 = ts.getColumn(c);
+            vector<float> col2 = ts.getColumn(c);
             struct correlatedFeatures cf1;
             cf1.feature1 = ts.getHeadLine(i);
             cf1.feature2 = ts.getHeadLine(c);
