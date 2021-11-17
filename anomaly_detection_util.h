@@ -1,3 +1,8 @@
+/*
+ * animaly_detection_util.h
+ *
+ * Author: 313361560 Shahar Rapp, 205866163 Ze'ev Binnes.
+ */
 
 #ifndef ANOMALYDETECTORUTIL_H_
 #define ANOMALYDETECTORUTIL_H_

@@ -1,3 +1,9 @@
+/*
+ * timeseries.cpp
+ *
+ * Author: 313361560 Shahar Rapp, 205866163 Ze'ev Binnes.
+ */
+
 #include "timeseries.h"
 #include <fstream>
 #include <sstream>

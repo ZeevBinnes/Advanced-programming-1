@@ -1,4 +1,8 @@
-
+/*
+ * timeseries.h
+ *
+ * Author: 313361560 Shahar Rapp, 205866163 Ze'ev Binnes.
+ */
 
 #ifndef TIMESERIES_H_
 #define TIMESERIES_H_
