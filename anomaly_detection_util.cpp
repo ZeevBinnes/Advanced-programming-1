@@ -6,8 +6,11 @@
 
 #include <math.h>
 #include "anomaly_detection_util.h"
+#include <vector>
 
-float avg(float* x, int size){
+using namespace std;
+
+float avg(vector<float> x, int size){
     if (size <= 0) return NAN;
     float sum = 0;
     for (int i = 0; i < size ; i++){
@@ -17,7 +20,7 @@ float avg(float* x, int size){
 }
 
 // returns the variance of X and Y
-float var(float* x, int size){
+float var(vector<float> x, int size){
     float mu = avg(x, size);
     float sum2 = 0;
     for (int i = 0; i < size ; i++){
@@ -27,7 +30,7 @@ float var(float* x, int size){
 }
 
 // returns the covariance of X and Y
-float cov(float* x, float* y, int size){
+float cov(vector<float> x, vector<float> y, int size){
     if (size <= 0) return NAN;
     float sum = 0;
     for (int i = 0; i < size ; i++){
@@ -38,7 +41,7 @@ float cov(float* x, float* y, int size){
 
 
 // returns the Pearson correlation coefficient of X and Y
-float pearson(float* x, float* y, int size){
+float pearson(vector<float> x, vector<float> y, int size){
     float denominator = (sqrt(var(x,size))*sqrt(var(y,size)));
     if (denominator == 0) return NAN;
 	return cov(x,y,size)/denominator;
@@ -46,21 +49,19 @@ float pearson(float* x, float* y, int size){
 
 // performs a linear regression and returns the line equation
 Line linear_reg(Point** points, int size){
-    float *x = new float[size];
-    float *y = new float[size];
+    vector<float> x;
+    vector<float> y;
     for (int i = 0; i < size; i++) {
         x[i] = points[i]->x;
         y[i] = points[i]->y;
     }
     Line line = linear_reg(x, y, size);
 
-    delete[] x;
-    delete[] y;
     return line;
 }
 
-// performs a linear regression from float*, and returns the line equation
-Line linear_reg(float* x, float* y, int size) {
+// performs a linear regression from vector<float>, and returns the line equation
+Line linear_reg(vector<float> x, vector<float> y, int size) {
     float a = (cov(x, y, size) / var(x, size));
     float b = avg(y, size) - (a * avg(x, size));
     return Line(a, b);
