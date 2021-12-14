@@ -9,7 +9,6 @@
 #include <vector>
 using namespace std;
 
-//helper methods:
 // Returns a float of the distance between two points
 float dist(const Point& a, const Point& b)
 {
@@ -92,8 +91,7 @@ Circle MEC_welzl(vector<Point>& P,vector<Point> R, int n)
     return MEC_welzl(P, R, n - 1);
 }
 
-
-// find anr returns the minimum enclosing circle
+// main function to find and returns the minimum enclosing circle
 Circle findMinCircle(Point** points,size_t size)
 {
     vector<Point> P_copy;
