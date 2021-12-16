@@ -18,8 +18,8 @@ struct correlatedFeatures{
 	string feature1,feature2;  // names of the correlated features
 	float corrlation;
 	Line lin_reg;
-	float threshold;	// will save the threshold given as parameter in learnNormal
-	float max_offset;	// the largest deviation of a point from the line
+	float threshold;	// the largest deviation of a point from the line
+	Point circleCenter = Point(0,0);
 };
 
 
@@ -35,6 +35,9 @@ public:
 	vector<correlatedFeatures> getNormalModel(){
 		return cf;
 	}
+protected:
+	virtual void find_threshold(struct correlatedFeatures & cf1, vector<float> col1, vector<float> col2);
+	virtual float findDeviation(Point point, struct correlatedFeatures cf1);
 
 };
 

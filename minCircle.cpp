@@ -101,3 +101,12 @@ Circle findMinCircle(Point** points,size_t size)
     random_shuffle(P_copy.begin(), P_copy.end());
     return MEC_welzl(P_copy, {}, P_copy.size());
 }
+
+Circle findMinCircle(vector<Point> points) {
+    vector<Point> P_copy;
+    for (int i = 0; i < points.size(); i++) {
+        P_copy.push_back(points[i]);
+    }
+    random_shuffle(P_copy.begin(), P_copy.end());
+    return MEC_welzl(P_copy, {}, P_copy.size());
+}
