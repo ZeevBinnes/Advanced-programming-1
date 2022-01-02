@@ -6,8 +6,10 @@
 #include<iostream>
 #include <string.h>
 
+#include <sstream>
 #include <fstream>
 #include <vector>
+#include <map>
 #include "HybridAnomalyDetector.h"
 
 using namespace std;
@@ -51,6 +53,8 @@ public:
 };
 
 // you may add here helper classes
+
+// instead of AnomalyReport, because I can't change it's defaults.
 class Report {
 public:
 	string description;
@@ -58,37 +62,81 @@ public:
 	Report(string description, long timeStep):description(description),timeStep(timeStep){}
 };
 
+class TimeInterval {
+public:
+	long start;
+	long end;
+	TimeInterval(long s, long e) : start(s), end(e) {}
+	static bool compareByStart(TimeInterval t1, TimeInterval t2) {return (t1.start < t2.start);}
+};
+
+// holds data and detector for use of all commands.
 class DetectorData {
 private:
 	HybridAnomalyDetector ad = HybridAnomalyDetector();
 	float correlation = ad.getThreshold();
+	
+	// help getAlgTimeIntervals().
+	void findSeries(vector<TimeInterval>* ti, vector<long> vl) {
+		long start = vl[0]; long end = start;
+		for (long l : vl) {
+			if (l == end)
+				++ end;
+			else {
+				TimeInterval t = TimeInterval(start,end-1);
+				ti->push_back(t);
+				start = l;
+				end = start + 1;
+			}
+		}
+		TimeInterval t = TimeInterval(start,end-1);
+		ti->push_back(t);
+	}
+
 public:
 	vector<Report> reports;
+	long numOfLinesTest;
 	DetectorData() {}
+
+	// help commands call AnomalyDetector methods
 	void anomalyTrain(const char* fileName) {
 		TimeSeries tsTrain = TimeSeries(fileName);
 		ad.learnNormal(tsTrain);
 	}
 	void anomalyTest(const char* fileName) {
 		TimeSeries tsTest = TimeSeries(fileName);
+		numOfLinesTest = tsTest.getLength();
 		std::vector<AnomalyReport> reportsFromAd = ad.detect(tsTest);
 		reports.clear();
 		for (auto a : reportsFromAd) {
 			reports.push_back(Report(a.description, a.timeStep));
 		}
 	}
+	// get and set the algorithm's correlation threshold.
 	float getCorrelation() {return correlation;}
 	void setCorrelation(float newCor) {
 		ad.setThreshold(newCor);
 		correlation = newCor;
 	}
+	// get anomaly time intervals from the report.
+	vector<TimeInterval>* getAlgTimeIntervals() {
+		vector<TimeInterval>* timeIntervalP = new vector<TimeInterval>;
+		map<string, vector<long>> timesPerDescription;
+		for (Report r : reports) {
+			vector<long> v;
+			timesPerDescription.insert({r.description, v});
+			timesPerDescription[r.description].push_back(r.timeStep);
+		}
+		for (auto it = timesPerDescription.begin(); it != timesPerDescription.end(); ++it) {
+			sort(it->second.begin(), it->second.end());
+			findSeries(timeIntervalP, it->second);
+		}
+		return timeIntervalP;
+	}
 	~DetectorData(){
 		reports.clear();
 	}
 };
-
-
-
 
 // you may edit this class
 class Command{
@@ -133,6 +181,7 @@ public:
 		dio->write("The current correlation threshold is ");
 		dio->write(currentCor);
 		dio->write("\n");
+		dio->write("Type a new threshold\n");
 		dio->read(&newCor);
 		while (newCor < 0 || newCor > 1) {
 			dio->write("please choose a value between 0 and 1.\n");
@@ -171,6 +220,66 @@ public:
 	UploadAndAnalyzeCommand(DefaultIO* dio, DetectorData* dd) : Command(dio,dd) {}
 	virtual std::string description() {return "5.upload anomalies and analyze results\n";}
 	virtual void execute() {
+		vector<TimeInterval> times = getInputTimes();
+		float p = (float)times.size();
+		int fp=0, tp=0;
+		long totalNumOfLines = dd->numOfLinesTest;
+		long numOfBadTimeSteps = 0;
+		for (TimeInterval t : times) {
+			numOfBadTimeSteps += (t.end-t.start+1);
+		}
+		vector<TimeInterval>* algTimes = dd->getAlgTimeIntervals();
+		// count the true and false positive alerts.
+		for (TimeInterval fromAlg : *algTimes) {
+			if (fromAlg.start > times[times.size()-1].end) {
+				++fp;
+				continue;
+			}
+			for (TimeInterval fromClient : times) {
+				if (fromAlg.end < fromClient.start){
+					++fp;
+					break;
+				} else if (fromAlg.start <= fromClient.end) {
+					++tp;
+					break;
+				}
+			}
+		}
+		// compute rate and send to output.
+		float truePositiveRate = (float)tp / (float)p;
+		float falsePositiveRate = (float)fp / (float)(totalNumOfLines - numOfBadTimeSteps);
+		truePositiveRate = floor(truePositiveRate * 1000) / 1000;
+		falsePositiveRate = floor(falsePositiveRate * 1000) / 1000;
+		dio->write("True Positive Rate: ");
+		dio->write(truePositiveRate);
+		dio->write("\n");
+		dio->write("False Positive Rate: ");
+		dio->write(falsePositiveRate);
+		dio->write("\n");
+		times.clear();
+		algTimes->clear();
+		delete algTimes;
+	}
+
+	vector<TimeInterval> getInputTimes() {
+		dio->write("Please upload your local anomalies file.\n");
+		std::string line = dio->read();
+		std::string x;
+		vector<long> time;
+		vector<TimeInterval> times;
+		while (line.compare("done") != 0) {
+			std::stringstream splitting(line);
+			while(getline(splitting, x, ',')) {
+				time.push_back(stol(x));
+			}
+			TimeInterval t = TimeInterval(time[0], time[1]);
+			times.push_back(t);
+			time.clear();
+			line = dio->read();
+		}
+		dio->write("Upload complete.\n");
+		sort(times.begin(), times.end(), TimeInterval::compareByStart);
+		return times;
 	}
 };
 

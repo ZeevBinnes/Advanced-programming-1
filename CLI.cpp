@@ -2,7 +2,6 @@
 
 CLI::CLI(DefaultIO* dio){
     this->dio = dio;
-//    HybridAnomalyDetector *ad = new HybridAnomalyDetector();
     this->dd = new DetectorData();
     this->commands.push_back(new UploadCommand(dio, dd));
     this->commands.push_back(new AlgSettingsCommand(dio, dd));
@@ -23,7 +22,6 @@ void CLI::start(){
         } catch(const std::exception& e) {
             std::cerr << e.what() << '\n';
         }        
-//        std::cin >> option;
         if (option == 6) {
             break;
         }
@@ -44,5 +42,6 @@ void CLI::printMenu() {
 
 CLI::~CLI() {
     this->commands.clear();
+    delete dd;
 }
 
