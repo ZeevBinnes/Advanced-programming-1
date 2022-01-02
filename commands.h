@@ -21,6 +21,15 @@ public:
 	virtual ~DefaultIO(){}
 
 	// you may add additional methods here
+	void createCSV(std::string fileName) {
+		ofstream file(fileName);
+		std::string line = read();
+		while (line.compare("done") != 0) {
+			file << line << std::endl;
+			line = read();
+		}
+		write("Upload complete.\n");
+	}
 };
 
 class StandardIO : public DefaultIO {
@@ -42,14 +51,52 @@ public:
 };
 
 // you may add here helper classes
+class Report {
+public:
+	string description;
+	long timeStep;
+	Report(string description, long timeStep):description(description),timeStep(timeStep){}
+};
+
+class DetectorData {
+private:
+	HybridAnomalyDetector ad = HybridAnomalyDetector();
+	float correlation = ad.getThreshold();
+public:
+	vector<Report> reports;
+	DetectorData() {}
+	void anomalyTrain(const char* fileName) {
+		TimeSeries tsTrain = TimeSeries(fileName);
+		ad.learnNormal(tsTrain);
+	}
+	void anomalyTest(const char* fileName) {
+		TimeSeries tsTest = TimeSeries(fileName);
+		std::vector<AnomalyReport> reportsFromAd = ad.detect(tsTest);
+		reports.clear();
+		for (auto a : reportsFromAd) {
+			reports.push_back(Report(a.description, a.timeStep));
+		}
+	}
+	float getCorrelation() {return correlation;}
+	void setCorrelation(float newCor) {
+		ad.setThreshold(newCor);
+		correlation = newCor;
+	}
+	~DetectorData(){
+		reports.clear();
+	}
+};
+
+
 
 
 // you may edit this class
 class Command{
 protected:
 	DefaultIO* dio;
+	DetectorData* dd;
 public:
-	Command(DefaultIO* dio):dio(dio){}
+	Command(DefaultIO* dio, DetectorData* dd):dio(dio),dd(dd) {}
 	virtual void execute()=0;
 	virtual ~Command(){}
 	virtual void print_description() {
@@ -62,63 +109,75 @@ public:
 
 class UploadCommand : public Command {
 public:
-	UploadCommand(DefaultIO* dio) : Command(dio) {}
-	virtual std::string description() {return "1. upload a time series csv file\n";}
+	UploadCommand(DefaultIO* dio, DetectorData* dd) : Command(dio,dd) {}
+	virtual std::string description() {return "1.upload a time series csv file\n";}
 	virtual void execute() {
 		std::string fileNames[] = {"anomalyTrain.csv", "anomalyTest.csv"};
 		std::string instruction[] = {"Please upload your local train CSV file.\n",
 			"Please upload your local test CSV file.\n"};
 		std::string line;
 		for (int i = 0; i <= 1; ++i) {
-			ofstream file(fileNames[i]);
 			dio->write(instruction[i]);
-			line = dio->read();
-			while (!line.compare("done") == 0) {
-				file << line << std::endl;
-				line = dio->read();
-			}
-			dio->write("Upload complete.\n");
+			dio->createCSV(fileNames[i]);
 		}
 	}
 };
 
 class AlgSettingsCommand : public Command {
 public:
-	AlgSettingsCommand(DefaultIO* dio) : Command(dio) {}
-	virtual std::string description() {return "2. algorithm settings\n";}
+	AlgSettingsCommand(DefaultIO* dio, DetectorData* dd) : Command(dio,dd) {}
+	virtual std::string description() {return "2.algorithm settings\n";}
 	virtual void execute() {
+		float newCor;
+		float currentCor = this->dd->getCorrelation();
+		dio->write("The current correlation threshold is ");
+		dio->write(currentCor);
+		dio->write("\n");
+		dio->read(&newCor);
+		while (newCor < 0 || newCor > 1) {
+			dio->write("please choose a value between 0 and 1.\n");
+			dio->read(&newCor);
+		}
+		this->dd->setCorrelation(newCor);
 	}
 };
 
 class DetectCommand : public Command {
 public:
-	DetectCommand(DefaultIO* dio) : Command(dio) {}
-	virtual std::string description() {return "3. detect anomalies\n";}
+	DetectCommand(DefaultIO* dio, DetectorData* dd) : Command(dio,dd) {}
+	virtual std::string description() {return "3.detect anomalies\n";}
 	virtual void execute() {
+		dd->anomalyTrain("anomalyTrain.csv");
+		dd->anomalyTest("anomalyTest.csv");
+		dio->write("anomaly detection complete.\n");
 	}
 };
 
 
 class DisplayResultsCommand : public Command {
 public:
-	DisplayResultsCommand(DefaultIO* dio) : Command(dio) {}
-	virtual std::string description() {return "4. display results\n";}
+	DisplayResultsCommand(DefaultIO* dio, DetectorData* dd) : Command(dio,dd) {}
+	virtual std::string description() {return "4.display results\n";}
 	virtual void execute() {
+		for (Report r : dd->reports) {
+			dio->write(to_string(r.timeStep) + "\t" + r.description + "\n");
+		}
+		dio->write("Done.\n");
 	}
 };
 
 class UploadAndAnalyzeCommand : public Command {
 public:
-	UploadAndAnalyzeCommand(DefaultIO* dio) : Command(dio) {}
-	virtual std::string description() {return "5. upload anomalies and analyze results\n";}
+	UploadAndAnalyzeCommand(DefaultIO* dio, DetectorData* dd) : Command(dio,dd) {}
+	virtual std::string description() {return "5.upload anomalies and analyze results\n";}
 	virtual void execute() {
 	}
 };
 
 class ExitCommand : public Command {
 public:
-	ExitCommand(DefaultIO* dio) : Command(dio) {}
-	virtual std::string description() {return "6. exit\n";}
+	ExitCommand(DefaultIO* dio, DetectorData* dd) : Command(dio,dd) {}
+	virtual std::string description() {return "6.exit\n";}
 	virtual void execute() {
 	}
 };
