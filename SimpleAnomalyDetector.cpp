@@ -19,8 +19,10 @@ which is a member of the "SimpleAnomalyDetector" Class.
 */
 void SimpleAnomalyDetector::learnNormal(const TimeSeries& ts){
     // initialize parameters:
-    float threshold = 0.499999999;      // correlation should be bigger than threshold
+    // correlation should be bigger than threshold
+    float threshold = (0.5 > this->correlationThreshold) ? this->correlationThreshold : 0.5;
     float enlarge_allowed_dev = 1.1;    // allow small anomaly, bigger than the max deviation by this.
+    cf.clear();
     // Iterate through the columns.
     for (int i = 0; i < ts.getSize(); i++) {
         float maxPearson = threshold;      // the pearson with the most matching column.
