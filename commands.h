@@ -33,7 +33,7 @@ public:
 			file << line << std::endl;
 			line = read();
 		}
-		write("Upload complete.\n");
+		this->write("Upload complete.\n");
 	}
 };
 
