@@ -1,11 +1,14 @@
-
+/*
+ * commands.h
+ *
+ * Author: 313361560 Shahar Rapp, 205866163 Ze'ev Binnes.
+ */
 
 #ifndef COMMANDS_H_
 #define COMMANDS_H_
 
-#include<iostream>
+#include <iostream>
 #include <string.h>
-
 #include <sstream>
 #include <fstream>
 #include <vector>
@@ -67,7 +70,6 @@ public:
 	long start;
 	long end;
 	TimeInterval(long s, long e) : start(s), end(e) {}
-	static bool compareByStart(TimeInterval t1, TimeInterval t2) {return (t1.start < t2.start);}
 };
 
 // holds data and detector for use of all commands.
@@ -75,24 +77,6 @@ class DetectorData {
 private:
 	HybridAnomalyDetector ad = HybridAnomalyDetector();
 	float correlation = ad.getThreshold();
-	
-	// help getAlgTimeIntervals().
-	void findSeries(vector<TimeInterval>* ti, vector<long> vl) {
-		long start = vl[0]; long end = start;
-		for (long l : vl) {
-			if (l == end)
-				++ end;
-			else {
-				TimeInterval t = TimeInterval(start,end-1);
-				ti->push_back(t);
-				start = l;
-				end = start + 1;
-			}
-		}
-		TimeInterval t = TimeInterval(start,end-1);
-		ti->push_back(t);
-	}
-
 public:
 	vector<Report> reports;
 	long numOfLinesTest;
@@ -135,6 +119,24 @@ public:
 	}
 	~DetectorData(){
 		reports.clear();
+	}
+
+private:
+	// help getAlgTimeIntervals().
+	void findSeries(vector<TimeInterval>* ti, vector<long> vl) {
+		long start = vl[0]; long end = start;
+		for (long l : vl) {
+			if (l == end)
+				++ end;
+			else {
+				TimeInterval t = TimeInterval(start,end-1);
+				ti->push_back(t);
+				start = l;
+				end = start + 1;
+			}
+		}
+		TimeInterval t = TimeInterval(start,end-1);
+		ti->push_back(t);
 	}
 };
 
@@ -230,20 +232,19 @@ public:
 		}
 		vector<TimeInterval>* algTimes = dd->getAlgTimeIntervals();
 		// count the true and false positive alerts.
+		bool tpFlag = false;
 		for (TimeInterval fromAlg : *algTimes) {
-			if (fromAlg.start > times[times.size()-1].end) {
-				++fp;
-				continue;
-			}
+			tpFlag = false;
 			for (TimeInterval fromClient : times) {
-				if (fromAlg.end < fromClient.start){
-					++fp;
-					break;
-				} else if (fromAlg.start <= fromClient.end) {
+				if (fromAlg.start <= fromClient.end &&
+						fromAlg.end >= fromClient.start) {
 					++tp;
+					tpFlag = true;
 					break;
 				}
 			}
+			if (!tpFlag)
+				++fp;
 		}
 		// compute rate and send to output.
 		float truePositiveRate = (float)tp / (float)p;
@@ -260,7 +261,7 @@ public:
 		algTimes->clear();
 		delete algTimes;
 	}
-
+private:
 	vector<TimeInterval> getInputTimes() {
 		dio->write("Please upload your local anomalies file.\n");
 		std::string line = dio->read();
@@ -278,7 +279,6 @@ public:
 			line = dio->read();
 		}
 		dio->write("Upload complete.\n");
-		sort(times.begin(), times.end(), TimeInterval::compareByStart);
 		return times;
 	}
 };
