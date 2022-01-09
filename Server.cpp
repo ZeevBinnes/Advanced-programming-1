@@ -51,9 +51,6 @@ void Server::start(ClientHandler& ch)throw(const char*){
             }
         }
         close(fd);
-        /*for (auto& th : clients) {
-            th.second->join();
-        }*/
     });
 }
 
