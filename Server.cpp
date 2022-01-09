@@ -36,18 +36,18 @@ void Server::start(ClientHandler& ch)throw(const char*){
     t = new thread([&ch, this](){
         while (run) {
             if (clients < clientLimit) {
+                new thread([&ch, this]() {
                 socklen_t addSize = sizeof(address);
                 int clientID = accept(fd, (struct sockaddr*)&address, &addSize);;
                 if (clientID < 0) {
-                     //throw "accept failed";
+                     throw "accept failed";
                 } else {
-                    //new thread([&ch, this, clientID]() {
+
                         clients++;
                         ch.handle(clientID);
                         close(clientID);
                         clients--;
-                    //});
-                }
+                }});
             }
         }
         close(fd);
