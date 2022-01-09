@@ -39,14 +39,11 @@ void Server::start(ClientHandler& ch)throw(const char*){
                 new thread([&ch, this]() {
                 socklen_t addSize = sizeof(address);
                 int clientID = accept(fd, (struct sockaddr*)&address, &addSize);;
-                if (clientID < 0) {
-                     throw "accept failed";
-                } else {
-
-                        clients++;
-                        ch.handle(clientID);
-                        close(clientID);
-                        clients--;
+                if (clientID > 0) {
+                    clients++;
+                    ch.handle(clientID);
+                    close(clientID);
+                    clients--;
                 }});
             }
         }
@@ -60,9 +57,8 @@ void Server::stop(){
 	t->join(); // do not delete this!
 }
 
-Server::~Server() {
-    //
-}
+Server::~Server() {}
+
 
 socketIO::socketIO(int client){
     this->client = client;
