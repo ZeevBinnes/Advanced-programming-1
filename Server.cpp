@@ -6,7 +6,6 @@
 
 #include <sys/socket.h>
 #include "Server.h"
-#include<signal.h>
 #include <iomanip>
 
 
@@ -34,16 +33,18 @@ Server::Server(int port)throw (const char*) {
 
 void Server::start(ClientHandler& ch)throw(const char*){
     t = new thread([&ch, this](){
+    vector<thread*> threads;
+    volatile int count = 0;
         while (run) {
-            if (clients < clientLimit) {
-                new thread([&ch, this]() {
+            if (count < clientLimit) {
+                count++;
+                new thread([&ch, this, &count]() {
                 socklen_t addSize = sizeof(address);
                 int clientID = accept(fd, (struct sockaddr*)&address, &addSize);;
                 if (clientID > 0) {
-                    clients++;
                     ch.handle(clientID);
                     close(clientID);
-                    clients--;
+                    count--;
                 }});
             }
         }

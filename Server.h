@@ -63,8 +63,7 @@ class AnomalyDetectionHandler:public ClientHandler{
 // implement on Server.cpp
 class Server {
 	thread* t; // the thread to run the start() method in
-    int clientLimit = 5;
-    int clients = 0;
+    int clientLimit = 3;
     sockaddr_in address;
     volatile bool run;
 
